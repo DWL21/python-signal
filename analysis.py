@@ -35,7 +35,6 @@ def get_recent_log_lines(hours) -> list:
 
     for directory in directories:
         if not os.path.exists(directory):
-            print(f"디렉토리가 존재하지 않습니다: {directory}")
             continue
 
         for filename in os.listdir(directory):
@@ -144,9 +143,20 @@ def run(hours=1):
     issued_ticket_count = dic[ISSUED_TICKET_KEY]
     consume_ticket_count = dic[CONSUMED_TICKET_KEY]
     message = create_analysis_message(hours, visit_count, issued_ticket_count, consume_ticket_count)
-    send_slack_notification(message)
+    # send_slack_notification(message)
     print(message)
 
+
+def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):
+    past_time = datetime.strptime(date_str, date_format)
+    now = datetime.now()
+    diff = now - past_time
+    total_hours = diff.total_seconds() / 3600
+    return int(total_hours)
+
+
 if __name__ == "__main__":
+    # hours = get_total_hours("2025-05-19 19:00")
     hours = 1
+    print(hours)
     run(hours)
