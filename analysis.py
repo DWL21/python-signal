@@ -156,7 +156,6 @@ def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):
 
 
 if __name__ == "__main__":
-    # hours = get_total_hours("2025-05-19 19:00")
-    hours = 1
-    print(hours)
+    hours = get_total_hours("2025-05-18 00:00")
+    # hours = 1
     run(hours)
