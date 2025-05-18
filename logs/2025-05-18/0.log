@@ -10,3 +10,4 @@
 2025-05-18 02:29:25.353 [http-nio-9011-exec-1]  INFO com.yourssu.signal.infrastructure.Notification - Issued ticket&5374 4b3ab213 1 22
 2025-05-18 02:32:51.852 [http-nio-9011-exec-2]  INFO com.yourssu.signal.infrastructure.Notification - Issued ticket&8495 4b3ab213 1 23
 2025-05-17 23:44:51.852 [http-nio-9011-exec-2]  INFO com.yourssu.signal.infrastructure.Notification - Issued ticket&8495 4b3ab213 1 23
+2025-05-18 13:43:44.963 [http-nio-9011-exec-9]  INFO com.yourssu.signal.config.filter.LoggingFilter - {"Reply":{"Method":"POST /api/profiles - 256ms","Status":201}}

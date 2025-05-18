@@ -7,7 +7,6 @@ from collections import defaultdict
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
-CONSUMED_TICKET_KEY = "consumedTicket"
 
 load_dotenv()
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
@@ -16,10 +15,14 @@ SLACK_LOG_CHANNEL = 'C08SZDPGSRX'
 
 SLACK_WEBHOOK_URL = 'https://slack.com/api/chat.postMessage'
 
+CREATED_FIXTURE = "\"Status\":201"
+CREATE_PROFILE_PREFIX = '{"Reply":{"Method":"POST /api/profiles - '
 ISSUE_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - Issued ticket'
 RETRY_ISSUE_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - RetryIssuedTicket'
 CONSUME_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - Consumed ticket'
 
+CREATE_PROFILE_KEY = "createProfile"
+CONSUMED_TICKET_KEY = "consumedTicket"
 ISSUED_TICKET_KEY = "issuedTicket"
 
 def get_recent_log_lines(hours) -> list:
@@ -75,14 +78,18 @@ def create_count_visitor_message(hours) -> int:
     return count_ip_addresses(recent_log_lines)
 
 
-def create_analysis_message(hours, visitor_count, issued_ticket_count, consume_ticket_count) -> str:
+def create_analysis_message(hours, visitor_count, profile_count, issued_ticket_count, consume_ticket_count) -> str:
     return f""" *💌 시그널 최근 {hours} 시간 분석 보고서 💌*
     - *📅  분석 기간* : {(datetime.now() - timedelta(hours=hours)).strftime('%Y년 %m월 %d일 %H시 %M분')} ~ {datetime.now().strftime('%Y년 %m월 %d일 %H시 %M분')}
     - *👥  방문자 수* : {visitor_count} 명
+    - *👤 등록한 프로필* : {profile_count} 개
     - *🎁  발급한 이용권* : {issued_ticket_count} 개
     - *💌  사용한 이용권* : {consume_ticket_count} 개
 """
 
+def get_created_profile(line, dic):
+    if CREATED_FIXTURE in line:
+        dic[CREATE_PROFILE_KEY] += 1
 
 def get_issued_ticket(line, dic):
     verification, uuid, ticket, available_ticket = line[line.find('&') + 1:].split(' ')
@@ -99,6 +106,7 @@ def get_consumed_ticket_message(line, dic):
 
 
 handler = {
+    CREATE_PROFILE_PREFIX: get_created_profile,
     ISSUE_TICKET_PREFIX: get_issued_ticket,
     RETRY_ISSUE_TICKET_PREFIX: get_ticket_by_bank_deposit,
     CONSUME_TICKET_PREFIX: get_consumed_ticket_message,
@@ -141,9 +149,10 @@ def run(hours=1):
                 except Exception:
                     continue
     visit_count = create_count_visitor_message(hours)
+    profile_count = dic[CREATE_PROFILE_KEY]
     issued_ticket_count = dic[ISSUED_TICKET_KEY]
     consume_ticket_count = dic[CONSUMED_TICKET_KEY]
-    message = create_analysis_message(hours, visit_count, issued_ticket_count, consume_ticket_count)
+    message = create_analysis_message(hours, visit_count, profile_count, issued_ticket_count, consume_ticket_count)
     # send_slack_notification(message)
     print(message)
 
@@ -157,6 +166,6 @@ def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):
 
 
 if __name__ == "__main__":
-    hours = get_total_hours("2025-05-18 00:00")
-    # hours = 1
+    # hours = get_total_hours("2025-05-18 00:00")
+    hours = 1
     run(hours)
