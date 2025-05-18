@@ -80,9 +80,9 @@ def create_count_visitor_message(start_time) -> int:
     return count_ip_addresses(recent_log_lines)
 
 
-def create_analysis_message(hours, visitor_count, profile_count, issued_ticket_count, consume_ticket_count) -> str:
+def create_analysis_message(start_time, visitor_count, profile_count, issued_ticket_count, consume_ticket_count) -> str:
     return f""" *💌 시그널 최근 {hours} 시간 분석 보고서 💌*
-    - *📅  분석 기간* : {(datetime.now() - timedelta(hours=hours)).strftime('%Y년 %m월 %d일 %H시 %M분')} ~ {datetime.now().strftime('%Y년 %m월 %d일 %H시 %M분')}
+    - *📅  분석 기간* : {start_time.strftime('%Y년 %m월 %d일 %H시 %M분')} ~ {datetime.now().strftime('%Y년 %m월 %d일 %H시 %M분')}
     - *👥  방문자 수* : {visitor_count} 명
     - *👤 등록한 프로필* : {profile_count} 개
     - *🎁  발급한 이용권* : {issued_ticket_count} 개
@@ -156,7 +156,7 @@ def run(start_time: datetime):
     profile_count = dic[CREATE_PROFILE_KEY]
     issued_ticket_count = dic[ISSUED_TICKET_KEY]
     consume_ticket_count = dic[CONSUMED_TICKET_KEY]
-    message = create_analysis_message(hours=start_time,
+    message = create_analysis_message(start_time=start_time,
                                       visitor_count=visit_count,
                                       profile_count=profile_count,
                                       issued_ticket_count=issued_ticket_count,
