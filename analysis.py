@@ -7,7 +7,6 @@ from collections import defaultdict
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
-
 load_dotenv()
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 SLACK_CHANNEL = os.getenv('SLACK_CHANNEL')
@@ -24,6 +23,7 @@ CONSUME_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - C
 CREATE_PROFILE_KEY = "createProfile"
 CONSUMED_TICKET_KEY = "consumedTicket"
 ISSUED_TICKET_KEY = "issuedTicket"
+
 
 def get_recent_log_lines(hours) -> list:
     now = datetime.now()
@@ -87,9 +87,11 @@ def create_analysis_message(hours, visitor_count, profile_count, issued_ticket_c
     - *💌  사용한 이용권* : {consume_ticket_count} 개
 """
 
+
 def get_created_profile(line, dic):
     if CREATED_FIXTURE in line:
         dic[CREATE_PROFILE_KEY] += 1
+
 
 def get_issued_ticket(line, dic):
     verification, uuid, ticket, available_ticket = line[line.find('&') + 1:].split(' ')
@@ -148,11 +150,15 @@ def run(hours=1):
                     handler_func(line, dic)
                 except Exception:
                     continue
-    visit_count = create_count_visitor_message(hours)
+    visitor_count = create_count_visitor_message(hours)
     profile_count = dic[CREATE_PROFILE_KEY]
     issued_ticket_count = dic[ISSUED_TICKET_KEY]
     consume_ticket_count = dic[CONSUMED_TICKET_KEY]
-    message = create_analysis_message(hours, visit_count, profile_count, issued_ticket_count, consume_ticket_count)
+    message = create_analysis_message(hours=hours,
+                                      visitor_count=visitor_count,
+                                      profile_count=profile_count,
+                                      issued_ticket_count=issued_ticket_count,
+                                      consume_ticket_count=consume_ticket_count)
     # send_slack_notification(message)
     print(message)
 
