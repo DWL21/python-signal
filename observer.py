@@ -210,7 +210,7 @@ handler = {
     ISSUE_TICKET_BY_BANK_DEPOSIT_PREFIX: create_issue_ticket_message,
     FAILED_BY_BANK_DEPOSIT_PREFIX: create_failed_issue_ticket_message_amount,
     FAILED_BY_UNMATCHED_VERIFICATION_PREFIX: create_failed_issue_ticket_message_verification,
-    PAY_NOTIFICATION_PREFIX: create_pay_notification_message,
+    PAY_NOTIFICATION_PREFIX : create_pay_notification_message,
     NO_FIRST_PURCHASED_TICKET_PREFIX: create_no_first_purchased_ticket_message
 }
 
@@ -229,7 +229,6 @@ def send_slack_notification(message):
 
 
 last_checked_line = dict()
-
 
 def check(file_path):
     global last_checked_line
@@ -269,7 +268,9 @@ if __name__ == "__main__":
     observer = Observer()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
-    print(f"Observer started: {datetime.now()}")
+    message = f"Observer started: {datetime.now()}"
+    print(message)
+    send_slack_log_notification(message)
     try:
         while True:
             time.sleep(1)
