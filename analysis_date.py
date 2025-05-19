@@ -165,8 +165,8 @@ def run(start_time: datetime):
                                       profile_count=profile_count,
                                       issued_ticket_count=issued_ticket_count,
                                       consume_ticket_count=consume_ticket_count)
-    # send_slack_notification(message)
-    append_or_create_file("analysis_date.txt", f"\n{message}\n")
+    send_slack_notification(message)
+    append_or_create_file("/home/ubuntu/signal-api/analysis_date.txt", f"\n{message}\n")
 
 
 def to_datetime(date_str, date_format="%Y-%m-%d %H:%M") -> datetime:

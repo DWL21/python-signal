@@ -164,8 +164,8 @@ def run(hours=1):
                                       profile_count=profile_count,
                                       issued_ticket_count=issued_ticket_count,
                                       consume_ticket_count=consume_ticket_count)
-    # send_slack_notification(message)
-    append_or_create_file("analysis.txt", f"\n{message}\n")
+    send_slack_notification(message)
+    append_or_create_file("/home/ubuntu/signal-api/analysis.txt", f"\n{message}\n")
 
 
 def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):
@@ -178,5 +178,5 @@ def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):
 
 if __name__ == "__main__":
     # hours = get_total_hours("2025-05-18 00:00")
-    hours = 1
+    hours = 2
     run(hours)
