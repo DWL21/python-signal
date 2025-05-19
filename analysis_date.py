@@ -183,6 +183,6 @@ def get_total_hours(start_time: datetime) -> int:
 
 
 if __name__ == "__main__":
-    start_time = to_datetime("2025-05-18 00:00")
+    start_time = to_datetime("2025-05-19 18:00")
     hours = get_total_hours(start_time)
     run(start_time)
