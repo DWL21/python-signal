@@ -35,7 +35,7 @@ def get_log_lines_from(start_datetime: datetime) -> list:
         date_list.append(current_date_to_scan.strftime('%Y-%m-%d'))
         current_date_to_scan += timedelta(days=1)
 
-    directories = [f'logs/{date_str}/' for date_str in date_list]
+    directories = [f'/home/ubuntu/signal-api/logs/{date_str}/' for date_str in date_list]
 
     for directory in directories:
         if not os.path.exists(directory):

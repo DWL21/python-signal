@@ -35,7 +35,7 @@ def get_recent_log_lines(hours) -> list:
     while current_date <= now.date():
         date_list.append(current_date.strftime('%Y-%m-%d'))
         current_date += timedelta(days=1)
-    directories = [f'logs/{date}/' for date in date_list]
+    directories = [f'/home/ubuntu/signal-api/logs/{date}/' for date in date_list]
 
     for directory in directories:
         if not os.path.exists(directory):
