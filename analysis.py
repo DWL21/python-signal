@@ -141,6 +141,11 @@ def send_slack_log_notification(message):
     print(log.text)
 
 
+def append_or_create_file(filename, content):
+    with open(filename, 'a', encoding='utf-8') as f:
+        f.write(content)
+
+
 def run(hours=1):
     dic = defaultdict(int)
     for line in get_recent_log_lines(hours):
@@ -160,7 +165,7 @@ def run(hours=1):
                                       issued_ticket_count=issued_ticket_count,
                                       consume_ticket_count=consume_ticket_count)
     # send_slack_notification(message)
-    print(message)
+    append_or_create_file("analysis.txt", f"\n{message}\n")
 
 
 def get_total_hours(date_str, date_format="%Y-%m-%d %H:%M"):

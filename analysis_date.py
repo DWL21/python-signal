@@ -142,6 +142,10 @@ def send_slack_log_notification(message):
     log = requests.post(SLACK_WEBHOOK_URL, json=payload, headers=headers)
     print(log.text)
 
+def append_or_create_file(filename, content):
+    with open(filename, 'a', encoding='utf-8') as f:
+        f.write(content)
+
 
 def run(start_time: datetime):
     dic = defaultdict(int)
@@ -162,7 +166,7 @@ def run(start_time: datetime):
                                       issued_ticket_count=issued_ticket_count,
                                       consume_ticket_count=consume_ticket_count)
     # send_slack_notification(message)
-    print(message)
+    append_or_create_file("analysis_date.txt", f"\n{message}\n")
 
 
 def to_datetime(date_str, date_format="%Y-%m-%d %H:%M") -> datetime:
