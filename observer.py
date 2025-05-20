@@ -12,7 +12,8 @@ load_dotenv()
 ENVIRONMENT = os.getenv('ENVIRONMENT')
 SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 SLACK_CHANNEL = os.getenv('SLACK_CHANNEL')
-SLACK_LOG_CHANNEL = 'C08SZDPGSRX'
+SLACK_ADMIN_CHANNEL = os.getenv('SLACK_ADMIN_CHANNEL')
+SLACK_LOG_CHANNEL = os.getenv('SLACK_LOG_CHANNEL')
 
 TICKET_PRICE_REGISTERED_POLICY = os.getenv('TICKET_PRICE_REGISTERED_POLICY')
 TICKET_PRICE_POLICY = os.getenv('TICKET_PRICE_POLICY')
@@ -22,6 +23,7 @@ SLACK_WEBHOOK_URL = 'https://slack.com/api/chat.postMessage'
 SERVER_RESTART = 'INFO org.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port'
 INTERNAL_ERROR_LOG_PREFIX = 'ERROR com.yourssu.signal.handler.InternalServerErrorControllerAdvice -'
 
+CREATE_PROFILE_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - CreateProfile'
 FAILED_PROFILE_CONTACT_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - FailedProfileContactExceedsLimit'
 CONTACT_EXCEEDS_WARNING_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - ContactExceedsLimitWarning'
 ISSUE_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - Issued ticket'
@@ -65,19 +67,47 @@ def send_slack_log_notification(message):
     print(log.text)
 
 
+def send_slack_admin_notification(message):
+    payload = {
+        'channel': SLACK_ADMIN_CHANNEL,
+        'text': message
+    }
+    headers = {
+        'Authorization': f'Bearer {SLACK_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+    log = requests.post(SLACK_WEBHOOK_URL, json=payload, headers=headers)
+    print(log.text)
+
+
+def create_profile_message(line):
+    id, department, contact, nickname, introSentences = line[line.find('&') + 1:].split('&')
+    message = f"""🩷 *프로필 등록 완료* 🩷
+    -  💖 *식별 번호*: {id}
+    -  🏢 *학과*: {department}
+    -  📞 *연락처*: {contact}
+    -  👤 *닉네임*: {nickname}
+    -  📝 *자기소개*: {introSentences}
+    """
+    append_or_create_file("/home/ubuntu/signal-api/createProfiles.txt", message)
+#    send_slack_admin_notification(message)
+
+
 def create_failed_profile_contact_message(line):
-    contact_policy = line[line.find('&') + 1:].split(' ')
+    contact_policy = line[line.find('&') + 1:].strip()
     message = f"""🚨🚨 같은 연락처 등록 실패 - {ENVIRONMENT.upper()} SERVER 🚨🚨
     - ⚔️ 중복 연락처 제한 기준: {contact_policy} 개
     """
+    append_or_create_file("/home/ubuntu/signal-api/createProfiles.txt", message)
     send_slack_log_notification(message)
 
 
 def create_contact_exceeds_warning_message(line):
-    contact_policy = line[line.find('&') + 1:].split(' ')
+    contact_policy = line[line.find('&') + 1:].strip()
     message = f"""🚨 같은 연락처 등록 경고 - {ENVIRONMENT.upper()} SERVER 🚨
     - ⚔️ 중복 연락처 경고 기준: {contact_policy} 개
     """
+    append_or_create_file("/home/ubuntu/signal-api/createProfiles.txt", message)
     send_slack_log_notification(message)
 
 
@@ -223,6 +253,7 @@ def create_no_first_purchased_ticket_message(line):
 handler = {
     SERVER_RESTART: create_server_restart_message,
     INTERNAL_ERROR_LOG_PREFIX: create_internal_error_message,
+    CREATE_PROFILE_PREFIX: create_profile_message,
     ISSUE_TICKET_PREFIX: create_issued_ticket_message,
     RETRY_ISSUE_TICKET_PREFIX: create_retry_issued_ticket_message,
     # CONSUME_TICKET_PREFIX: create_consumed_ticket_message,
@@ -247,6 +278,11 @@ def send_slack_notification(message):
     }
     log = requests.post(SLACK_WEBHOOK_URL, json=payload, headers=headers)
     print(log.text)
+
+
+def append_or_create_file(filename, content):
+    with open(filename, 'a', encoding='utf-8') as f:
+        f.write(content)
 
 
 last_checked_line = dict()
