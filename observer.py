@@ -85,7 +85,7 @@ def create_profile_message(line):
     message = f"""🩷 *프로필 등록 완료* 🩷
     -  💖 *식별 번호*: {id}
     -  🏢 *학과*: {department}
-    -  📞 *연락처*: {contact}
+    -  📞 *연락처*: https://www.instagram.com/{contact.replace('@', '')}
     -  👤 *닉네임*: {nickname}
     -  📝 *자기소개*: {introSentences}
     """
