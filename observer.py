@@ -1,3 +1,4 @@
+import json
 import time
 import pytz
 import os
@@ -21,6 +22,8 @@ SLACK_WEBHOOK_URL = 'https://slack.com/api/chat.postMessage'
 SERVER_RESTART = 'INFO org.springframework.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port'
 INTERNAL_ERROR_LOG_PREFIX = 'ERROR com.yourssu.signal.handler.InternalServerErrorControllerAdvice -'
 
+FAILED_PROFILE_CONTACT_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - FailedProfileContactExceedsLimit'
+CONTACT_EXCEEDS_WARNING_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - ContactExceedsLimitWarning'
 ISSUE_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - Issued ticket'
 RETRY_ISSUE_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - RetryIssuedTicket'
 CONSUME_TICKET_PREFIX = 'INFO com.yourssu.signal.infrastructure.Notification - Consumed ticket'
@@ -60,6 +63,22 @@ def send_slack_log_notification(message):
     }
     log = requests.post(SLACK_WEBHOOK_URL, json=payload, headers=headers)
     print(log.text)
+
+
+def create_failed_profile_contact_message(line):
+    contact_policy = line[line.find('&') + 1:].split(' ')
+    message = f"""🚨🚨 같은 연락처 등록 실패 - {ENVIRONMENT.upper()} SERVER 🚨🚨
+    - ⚔️ 중복 연락처 제한 기준: {contact_policy} 개
+    """
+    send_slack_log_notification(message)
+
+
+def create_contact_exceeds_warning_message(line):
+    contact_policy = line[line.find('&') + 1:].split(' ')
+    message = f"""🚨 같은 연락처 등록 경고 - {ENVIRONMENT.upper()} SERVER 🚨
+    - ⚔️ 중복 연락처 경고 기준: {contact_policy} 개
+    """
+    send_slack_log_notification(message)
 
 
 def create_issued_ticket_message(line):
@@ -207,10 +226,12 @@ handler = {
     ISSUE_TICKET_PREFIX: create_issued_ticket_message,
     RETRY_ISSUE_TICKET_PREFIX: create_retry_issued_ticket_message,
     # CONSUME_TICKET_PREFIX: create_consumed_ticket_message,
+    FAILED_PROFILE_CONTACT_PREFIX: create_failed_profile_contact_message,
+    CONTACT_EXCEEDS_WARNING_PREFIX: create_contact_exceeds_warning_message,
     ISSUE_TICKET_BY_BANK_DEPOSIT_PREFIX: create_issue_ticket_message,
     FAILED_BY_BANK_DEPOSIT_PREFIX: create_failed_issue_ticket_message_amount,
     FAILED_BY_UNMATCHED_VERIFICATION_PREFIX: create_failed_issue_ticket_message_verification,
-    PAY_NOTIFICATION_PREFIX : create_pay_notification_message,
+    PAY_NOTIFICATION_PREFIX: create_pay_notification_message,
     NO_FIRST_PURCHASED_TICKET_PREFIX: create_no_first_purchased_ticket_message
 }
 
@@ -229,6 +250,7 @@ def send_slack_notification(message):
 
 
 last_checked_line = dict()
+
 
 def check(file_path):
     global last_checked_line
